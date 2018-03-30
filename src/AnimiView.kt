@@ -27,9 +27,6 @@ class AnimiView : View() {
 
     val connection = URL("http://192.168.1.101:8018").openConnection() as HttpURLConnection
 
-
-
-
     override val root = VBox()
     val canvas = Canvas(1000.0,800.0);
     val gc = canvas.graphicsContext2D;
@@ -38,26 +35,13 @@ class AnimiView : View() {
     val pm = PenManager(po)
     val penListener = WacomListener(gc)
 
+    val gpListener = GPlistener(connection)
+
     init {
-
-        try {
-//            val data = connection.inputStream.bufferedReader().readText()
-//            print(data)
-
-            connection.setRequestMethod("POST")
-            connection.setDoOutput(true)
-            connection.connect()
-            val os = connection.getOutputStream()
-            os.write("Scottshak".toByteArray())
-            println("resp: "+connection.responseMessage)
-
-        } finally {
-            connection.disconnect()
-        }
-
-
-        pm.pen.addListener(penListener)
         root.children.add(canvas)
+        pm.pen.addListener(penListener)
+        pm.pen.addListener(gpListener)
+
     }
 
 }
