@@ -1,22 +1,38 @@
+import com.sun.xml.internal.ws.streaming.XMLStreamWriterUtil.getOutputStream
 import jpen.*
 import jpen.event.PenListener
-import java.io.OutputStream
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.InetSocketAddress
+import java.net.Socket
+import java.util.*
 
 /**
  * Created by QMICSLU on 2018-03-30.
  */
 
-class GPlistener(val outputStream : OutputStream) : PenListener {
+class GPlistener(val connection : HttpURLConnection) : PenListener {
 
-    var lastPLevel = 0.0 : Float
+    var lastPLevel: Float
+    val gpSocket: Socket
+    val out: PrintWriter
 
+    init {
+        lastPLevel = 0f
+
+        gpSocket = Socket("192.168.1.101",8018)
+        out = PrintWriter(gpSocket.getOutputStream(),true)
+
+        gpSocket.keepAlive = true
+
+
+
+    }
 
     override fun penButtonEvent(e: PButtonEvent) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun penTock(e: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun penLevelEvent(e: PLevelEvent) {
@@ -24,28 +40,33 @@ class GPlistener(val outputStream : OutputStream) : PenListener {
 
         val p = e.pen.getLevelValue(PLevel.Type.PRESSURE) as Float
 
+
         if (p > 0) {
-            if (lastPLevel == 0.0) {
-                outputStream.write("[start]".toByteArray())
+            if (lastPLevel == 0f) {
+                out.print("s")
+                out.flush()
             }
             val x = e.pen.getLevelValue(PLevel.Type.X)
             val y = e.pen.getLevelValue(PLevel.Type.Y)
-            outputStream.write("[$x,$y,$p]".toByteArray())
+
+            out.print("[${x.short()},${y.short()},${p.short()}]")
+            out.flush()
         }
-        else if (lastPLevel > 0){
-            outputStream.write("[end]".toByteArray())
+        else if (lastPLevel > 0f){
+            out.print("e")
+            out.flush()
         }
 
         lastPLevel = p
-
     }
 
     override fun penScrollEvent(e: PScrollEvent) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun penKindEvent(e: PKindEvent) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    fun Float.short() : String {
+        return String.format(Locale.ROOT,"%.2f", this)
+    }
 }

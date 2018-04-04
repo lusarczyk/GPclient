@@ -22,7 +22,7 @@ public class WacomListener extends PenAdapter {
 
         float p = e.pen.getLevelValue(PLevel.Type.PRESSURE);
         if (p > 0) {
-            System.out.println(e.pen.getLevelValue(PLevel.Type.X)+" : "+e.pen.getLevelValue(PLevel.Type.Y));
+            //System.out.println(e.pen.getLevelValue(PLevel.Type.X)+" : "+e.pen.getLevelValue(PLevel.Type.Y));
             graphicsContext.fillOval(e.pen.getLevelValue(PLevel.Type.X), e.pen.getLevelValue(PLevel.Type.Y),p*10,p*10);
         }
     }
