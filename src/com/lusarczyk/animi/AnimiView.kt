@@ -1,15 +1,15 @@
+package com.lusarczyk.animi
+
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.Button
-import javafx.scene.control.Label
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Screen
 import jpen.PenManager
 import tornadofx.View
 import tornadofx.onChange
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.*
+import kotlin.system.exitProcess
 
 
 /**
@@ -18,15 +18,15 @@ import java.util.*
 
 class AnimiView : View() {
 
-    val connection = URL("http://192.168.1.101:8018").openConnection() as HttpURLConnection
-
     override val root = VBox()
 
     init {
 
-        val buttons = HBox()
-        val gpListener = GPlistener(connection)
         val controller = Controller(currentStage)
+        val cd = ConnectDialog(controller)
+        cd.show()
+
+        val buttons = HBox()
         val tools = Tools(controller)
 
         buttons.children.addAll(tools.buttons)
@@ -36,21 +36,23 @@ class AnimiView : View() {
         val canvas = Canvas(screenWidth, screenHeight);
         val gc = canvas.graphicsContext2D;
 
+        val socket = controller.socket
+        if (socket != null) {
+            val po = WacomOwner(canvas)
+            val pm = PenManager(po)
+            val penListener = WacomListener(gc)
+            val gpListener = GPlistener(socket)
+            pm.pen.addListener(penListener)
+            pm.pen.addListener(gpListener)
+        }
+        else {
+            exitProcess(1)
+        }
         currentStage?.widthProperty()?.onChange {println(it/screenWidth); canvas.scaleX = it/screenWidth }
         currentStage?.heightProperty()?.onChange { canvas.scaleY = it/screenHeight }
 
-        val po = WacomOwner(canvas)
-        val pm = PenManager(po)
-        val penListener = WacomListener(gc)
-
         root.children.add(canvas)
         root.setPrefSize(1000.0, 800.0)
-
-
-
-        pm.pen.addListener(penListener)
-        pm.pen.addListener(gpListener)
-
         canvas.widthProperty().bind(root.widthProperty())
         canvas.heightProperty().bind(root.heightProperty())
         currentStage?.xProperty()?.onChange { println(it) }

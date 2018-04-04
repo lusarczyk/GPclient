@@ -1,3 +1,5 @@
+package com.lusarczyk.animi;
+
 import javafx.scene.Node;
 import jpen.PenEvent;
 import jpen.PenProvider;
